@@ -1,0 +1,7 @@
+# ignore kdev's files
+*.kdev4
+.kdev4/*
+
+# ignore build and and the compiled binary
+build/*
+bin/worktimer
