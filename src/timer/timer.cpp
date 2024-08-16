@@ -60,7 +60,7 @@ timerer::timerer(SDL_Renderer* render, SDL_Window* windoww) {
     timerlist.push_back({"work1",1500,true});
     timerlist.push_back({"break1",300,false});
     timerlist.push_back({"work2",1500,true});
-    timerlist.push_back({"break2",1500,false});
+    timerlist.push_back({"break2",300,false});
     timerlist.push_back({"work3",1500,true});
     timerlist.push_back({"larger break :3",1800,false});
 }
