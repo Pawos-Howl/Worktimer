@@ -43,7 +43,7 @@ void _checkTTFError(
     if (code != 0)
     {
         fprintf(stderr, "\nSDL_TTF Error: %s\n...at %s:%d '%s'\n",
-                        TTF_GetError(), file, line, func);
+                        SDL_GetError(), file, line, func); // SDL error bc idk
         fflush(stderr);
         exit(-1);
     }

@@ -40,17 +40,18 @@ struct AppState {
 };
 
 
-int SDL_AppInit(void **appstate, int argc, char **argv) {
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     std::cerr << "SDL_AppInit" << std::endl;
 
     *appstate = new AppState;
     AppState* state = static_cast<AppState*>(*appstate);
 
     // init SDL3
-    const int initFlags = SDL_INIT_VIDEO | SDL_INIT_EVENTS;
-    checkSDLError(SDL_InitSubSystem(initFlags));
+    const int initFlags = SDL_INIT_EVENTS | SDL_INIT_VIDEO;
+    checkSDLError(!SDL_InitSubSystem(initFlags));
 
-    const int windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN;
+    // const int windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN;
+    const int windowFlags = SDL_WINDOW_VULKAN;
     state->p_window = SDL_CreateWindow(
         "Worktimer",
         960, 540,
@@ -69,10 +70,10 @@ int SDL_AppInit(void **appstate, int argc, char **argv) {
     state->timer = new timerer(state->p_renderer, state->p_window);
     state->timer->startTimer();
 
-    return 0;
+    return SDL_APP_CONTINUE;
 }
 
-int SDL_AppIterate(void *appstate) {
+SDL_AppResult SDL_AppIterate(void *appstate) {
     AppState* state = static_cast<AppState*>(appstate);
     uint32_t starttick = SDL_GetTicks();
 
@@ -112,16 +113,16 @@ int SDL_AppIterate(void *appstate) {
     if(waittime >= 1000 || waittime < 0) waittime = 0;
     SDL_Delay(FPSDELAY - FrameTime);
 
-    return 0;
+    return SDL_APP_CONTINUE;
 }
 
-int SDL_AppEvent(void *appstate, const SDL_Event *event) {
-    if(event->type == SDL_EVENT_QUIT) {return 1;}
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
+    if(event->type == SDL_EVENT_QUIT) {return SDL_APP_SUCCESS;}
 
-    return 0;
+    return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *appstate) {
+void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     AppState* state = static_cast<AppState*>(appstate);
 
     SDL_DestroyRenderer(state->p_renderer);
@@ -132,5 +133,11 @@ void SDL_AppQuit(void *appstate) {
     TTF_CloseFont(state->fpsfont);
 
     delete state;
+
+    // final remarks
+    if(result == SDL_APP_FAILURE) {
+        std::cout << "damn. guess I fluffed up." << std::endl;
+    }
+
     return;
 }

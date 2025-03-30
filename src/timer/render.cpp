@@ -26,6 +26,9 @@ void renderTime(int64_t time, char* label, SDL_Renderer* renderer, SDL_Window* w
 
     RenderInfo* trender = getTextureFromChars(str, 50, renderer);
     centeredInfo *tcenter = centerTexture(trender, window);
+    // shift down
+    tcenter->y += 15;
+
     RenderTTFTexture(trender, renderer, tcenter);
     DestroyRenderInfo(trender);
     DestroyCenteredInfo(tcenter);
@@ -36,7 +39,7 @@ void renderTime(int64_t time, char* label, SDL_Renderer* renderer, SDL_Window* w
     RenderInfo* lrender = getTextureFromChars(label, 30, renderer);
     centeredInfo *lcenter = centerTexture(lrender, window);
     // shift it up
-    lcenter->y -= 40;
+    lcenter->y -= 25;
 
     RenderTTFTexture(lrender, renderer, lcenter);
     DestroyRenderInfo(lrender);

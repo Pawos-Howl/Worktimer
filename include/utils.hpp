@@ -25,4 +25,9 @@ void _checkTTFError(
     const char *const file,
     const int line);
 
+// template and header definition
+template <typename T> inline static int sizeOfArray(T* arr) {
+    return sizeof(&arr) / sizeof(arr[0]); //divide bytes in array by the size of the first element in bytes to get number of items
+}
+
 #endif

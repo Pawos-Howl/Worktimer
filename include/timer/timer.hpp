@@ -36,6 +36,11 @@ class timerer {
         // renderer
         SDL_Renderer* renderer;
         SDL_Window* window; // for centering
+
+        // delay between timers
+        uint32_t btdelay; // ms
+        int64_t btdelayStart; // 0 if not an active delay
+
     public:
         // constructor/destructor
         timerer(SDL_Renderer* renderer, SDL_Window* windoww);

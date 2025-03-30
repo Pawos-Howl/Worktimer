@@ -20,9 +20,10 @@ DEFAULTS defs;
 RenderInfo *getTextureFromChars(char* text, TTF_Font* font, SDL_Color color, SDL_Renderer* renderer) {
     RenderInfo *rinfo = new RenderInfo;
 
-    SDL_Surface* tmpsurface = TTF_RenderUTF8_Solid(font, text, color);
-    checkTTFError(tmpsurface == NULL);
+    int textsize = sizeOfArray(&text)-1;
 
+    SDL_Surface* tmpsurface = TTF_RenderText_Solid(font, text, textsize, color);
+    checkTTFError(tmpsurface == NULL);
     rinfo->width = tmpsurface->w;
     rinfo->height = tmpsurface->h;
 
@@ -97,7 +98,7 @@ int centerTextureY(RenderInfo* renderinfo, SDL_Window* window) {
 centeredInfo *centerTexture(RenderInfo* renderinfo, SDL_Window* window) {
     centeredInfo *center = new centeredInfo;
     int w, h;
-    checkSDLError(SDL_GetWindowSizeInPixels(window, &w, &h));
+    checkSDLError(!SDL_GetWindowSizeInPixels(window, &w, &h));
     int rw = renderinfo->width;
     int rh = renderinfo->height;
     center->x = (w-rw)/2;

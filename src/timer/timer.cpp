@@ -8,6 +8,9 @@
 #include <iostream>
 
 void timerer::nextTimer() {
+    // if during a timerdelay, don't
+    if(btdelayStart != 0) return;
+
     // check if it is at the end of the timerlist
     if(curTimer+1 >= timerlist.size()){
         // end timer
@@ -23,6 +26,9 @@ void timerer::nextTimer() {
     // restart the timing stuffs
     int64_t curtime = getSystimeMS();
 
+    // init the delay
+    btdelayStart = curtime;
+
     timerEnd = curtime + (nxtEntry.duration * 1000);
 }
 
@@ -32,7 +38,7 @@ void timerer::betweenTimers(timerentry* priorEntry) {
 
 int64_t timerer::getSystimeMS() {
     SDL_Time systime; // basically a signed int64
-    checkSDLError(SDL_GetCurrentTime(&systime)); // epoch
+    checkSDLError(!SDL_GetCurrentTime(&systime)); // epoch
     return (uint64_t)systime/1000000; // to ms (div 10^6)
 }
 int64_t timerer::getSystimeSec() {
@@ -49,6 +55,10 @@ timerer::timerer(SDL_Renderer* render, SDL_Window* windoww) {
     timerPaused = true;
     timeleft = 0;
     timerEnd = 0;
+
+    // between timer stuffs
+    btdelay = 1000; // ms of delay
+    btdelayStart = 0;
 
     // timers data
     LOCKTIMEVECTOR = true; // just for now, since the code doesn't support modifications yet
@@ -68,6 +78,7 @@ timerer::~timerer() {
     // nothing needed for now
 }
 
+// this call somehow skips the first item... WHY???
 void timerer::startTimer() {
     // check if it is a start or a restart
     if(!timerPaused) {
@@ -79,6 +90,9 @@ void timerer::startTimer() {
         // start the timing stuffs
         uint32_t furtime = (timerlist.at(0).duration * 1000); // to ms
         int64_t curtime = getSystimeMS();
+
+        // setup the delay to start off with
+        btdelayStart = curtime;
 
         timerEnd = curtime + furtime;
     }
@@ -116,8 +130,15 @@ void timerer::resetTimer() {
 void timerer::drawTime() {
     if(!LOCKTIMEVECTOR) {return;} // this just assumes that the timer is running
     int64_t systime  = getSystimeMS();
+
+    bool betweenTimers = false;
+    // check if it is between timers, if it is, then the whole thing is weird
+    if(btdelayStart + btdelay > systime) betweenTimers = true;
+    // if the delay is set, but out, then fix it
+    if(btdelay != 0) btdelay = 0;
+
     // check if it is out of time, if it is then iterate timers
-    if(systime >= timerEnd && timerEnd != 0) nextTimer();
+    if(systime >= timerEnd && timerEnd != 0 && !betweenTimers) nextTimer();
     int64_t difftime = timerEnd - systime;
     renderTime(difftime, (char*)timerlist.at(curTimer).name.data(), renderer, window);
 }
