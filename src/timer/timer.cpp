@@ -52,7 +52,7 @@ timerer::timerer(SDL_Renderer* render, SDL_Window* windoww) {
 
     // timer stuffs
     curTimer = 0;
-    timerPaused = true;
+    timerPaused = false;
     timeleft = 0;
     timerEnd = 0;
 
@@ -64,9 +64,6 @@ timerer::timerer(SDL_Renderer* render, SDL_Window* windoww) {
     LOCKTIMEVECTOR = true; // just for now, since the code doesn't support modifications yet
 
     // times are done by hand
-    // the first item is to fix a bug where it keeps skipping the first item
-    timerlist.push_back({"bugfix",0,true});
-
     timerlist.push_back({"work1",1500,true});
     timerlist.push_back({"break1",300,false});
     timerlist.push_back({"work2",1500,true});
@@ -87,14 +84,8 @@ void timerer::startTimer() {
         curTimer = 0;
         LOCKTIMEVECTOR = true;
 
-        // start the timing stuffs
-        uint32_t furtime = (timerlist.at(0).duration * 1000); // to ms
-        int64_t curtime = getSystimeMS();
-
-        // setup the delay to start off with
-        btdelayStart = curtime;
-
-        timerEnd = curtime + furtime;
+        // set time left then go
+        timeleft = timerlist.at(0).duration * 1000 ; // *1000 to get to ms
     }
     // restart
     int64_t systime = getSystimeMS();

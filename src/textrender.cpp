@@ -7,15 +7,9 @@
 
 #include "utils.hpp"
 
-struct DEFAULTS {
-    // ONLY if the file is there
-    std::string fontPaf = "assets/arial.ttf";
-    int size = 12;
-    SDL_Color color = {255,255,255,255};
-
-};
-
-DEFAULTS defs;
+#define defaultfontpath "assets/arial.ttf"
+#define defaultsize 12
+#define defaultcolor {255,255,255,255}
 
 RenderInfo *getTextureFromChars(char* text, TTF_Font* font, SDL_Color color, SDL_Renderer* renderer) {
     RenderInfo *rinfo = new RenderInfo;
@@ -51,20 +45,20 @@ RenderInfo *getTextureFromChars(char* text, char* paf, int size, SDL_Color color
     return info;
 }
 RenderInfo *getTextureFromChars(char* text, int size, SDL_Renderer* renderer){
-    TTF_Font *tmpfont = loadFont((char*)defs.fontPaf.data(), size);
+    TTF_Font *tmpfont = loadFont((char*)defaultfontpath, size);
     checkTTFError(tmpfont == NULL);
 
-    RenderInfo *info = getTextureFromChars(text, tmpfont, defs.color, renderer);
+    RenderInfo *info = getTextureFromChars(text, tmpfont, defaultcolor, renderer);
 
     TTF_CloseFont(tmpfont);
 
     return info;
 }
 RenderInfo *getTextureFromChars(char* text, SDL_Renderer* renderer) {
-    TTF_Font *tmpfont = loadFont((char*)defs.fontPaf.data(), defs.size);
+    TTF_Font *tmpfont = loadFont((char*)defaultfontpath, defaultsize);
     checkTTFError(tmpfont == NULL);
 
-    RenderInfo *info = getTextureFromChars(text, tmpfont, defs.color, renderer);
+    RenderInfo *info = getTextureFromChars(text, tmpfont, defaultcolor, renderer);
 
     TTF_CloseFont(tmpfont);
 
