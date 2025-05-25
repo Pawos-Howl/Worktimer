@@ -5,13 +5,15 @@
 #include <stdint.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
+bool verbose = false;
+
 bool f_exists(const std::string& name) {
     struct stat buffer;
     return (stat (name.c_str(), &buffer) == 0);
 }
 
-void uint32ToChars(uint32_t nyyaaa, char* chars) {
-    sprintf(chars, "%u", nyyaaa);
+void uint32ToChars(uint32_t num, char* chars) {
+    sprintf(chars, "%u", num);
 }
 
 SDL_FRect SDLRectToFRect(SDL_Rect* rect) {
@@ -43,7 +45,7 @@ void _checkTTFError(
     if (code != 0)
     {
         fprintf(stderr, "\nSDL_TTF Error: %s\n...at %s:%d '%s'\n",
-                        SDL_GetError(), file, line, func); // SDL error bc idk
+                        SDL_GetError(), file, line, func); // SDL error bc STL_TTF has no errors?
         fflush(stderr);
         exit(-1);
     }

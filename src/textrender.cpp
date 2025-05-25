@@ -34,8 +34,18 @@ inline TTF_Font *loadFont(char* paf, int size) {
     return tmpfont;
 }
 
-RenderInfo *getTextureFromChars(char* text, char* paf, int size, SDL_Color color, SDL_Renderer* renderer) {
-    TTF_Font *tmpfont = loadFont(paf, size);
+RenderInfo *getTextureFromChars(char* text, char* fontpath, int size, SDL_Color color, SDL_Renderer* renderer) {
+    TTF_Font *tmpfont = loadFont(fontpath, size);
+    checkTTFError(tmpfont == NULL);
+
+    RenderInfo *info = getTextureFromChars(text, tmpfont, color, renderer);
+
+    TTF_CloseFont(tmpfont);
+
+    return info;
+}
+RenderInfo *getTextureFromChars(char* text, int size, SDL_Color color, SDL_Renderer* renderer) {
+    TTF_Font *tmpfont = loadFont((char*)defaultfontpath, size);
     checkTTFError(tmpfont == NULL);
 
     RenderInfo *info = getTextureFromChars(text, tmpfont, color, renderer);

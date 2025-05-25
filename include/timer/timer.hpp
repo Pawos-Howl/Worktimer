@@ -13,7 +13,7 @@ struct timerentry {
     bool isWorkTimer; // if false, its break time
 };
 
-class timerer {
+class Timerer {
     private:
         // timers
         std::vector<timerentry> timerlist;
@@ -43,14 +43,16 @@ class timerer {
 
     public:
         // constructor/destructor
-        timerer(SDL_Renderer* renderer, SDL_Window* windoww);
-        ~timerer();
+        Timerer(SDL_Renderer* renderer, SDL_Window* windoww);
+        ~Timerer();
 
         // timer controls
         void startTimer(); // int for status codes
-        int64_t pauseTimer(); // returns time left on active timer
         void stopTimer();
+        void toggleState(); // quickly start/stop the timer
         void resetTimer();
+
+        int64_t getRemainingMS(); // returns the time left on the active timer
 
         void drawTime(); // display time and label
 

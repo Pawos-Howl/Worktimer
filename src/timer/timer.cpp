@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-void timerer::nextTimer() {
+void Timerer::nextTimer() {
     // if during a timerdelay, don't
     if(btdelayStart != 0) return;
 
@@ -32,21 +32,21 @@ void timerer::nextTimer() {
     timerEnd = curtime + (nxtEntry.duration * 1000);
 }
 
-void timerer::betweenTimers(timerentry* priorEntry) {
+void Timerer::betweenTimers(timerentry* priorEntry) {
     std::cout << "Finished entry: " + priorEntry->name << std::endl;
 }
 
-int64_t timerer::getSystimeMS() {
+int64_t Timerer::getSystimeMS() {
     SDL_Time systime; // basically a signed int64
     checkSDLError(!SDL_GetCurrentTime(&systime)); // epoch
     return (uint64_t)systime/1000000; // to ms (div 10^6)
 }
-int64_t timerer::getSystimeSec() {
+int64_t Timerer::getSystimeSec() {
     return getSystimeMS()/1000;
 }
 // public
 // constructor/deconstructor
-timerer::timerer(SDL_Renderer* render, SDL_Window* windoww) {
+Timerer::Timerer(SDL_Renderer* render, SDL_Window* windoww) {
     renderer = render;
     window = windoww;
 
@@ -71,12 +71,13 @@ timerer::timerer(SDL_Renderer* render, SDL_Window* windoww) {
     timerlist.push_back({"work3",1500,true});
     timerlist.push_back({"larger break :3",1800,false});
 }
-timerer::~timerer() {
-    // nothing needed for now
+Timerer::~Timerer() {
+    // clean up the render cache
+    clearTimerRenderCache();
 }
 
 // this call somehow skips the first item... WHY???
-void timerer::startTimer() {
+void Timerer::startTimer() {
     // check if it is a start or a restart
     if(!timerPaused) {
         // start
@@ -92,20 +93,17 @@ void timerer::startTimer() {
     timerEnd = systime + timeleft;
     timerPaused = false;
 }
-int64_t timerer::pauseTimer() {
-    // soft stop, can be restarted
-    int64_t systime = getSystimeMS();
-    timeleft = timerEnd - systime;
-    timerPaused = true;
-    return timeleft;
-}
-void timerer::stopTimer() {
+void Timerer::stopTimer() {
     // soft stop, can be restarted
     int64_t systime = getSystimeMS();
     timeleft = timerEnd - systime;
     timerPaused = true;
 }
-void timerer::resetTimer() {
+void Timerer::toggleState() {
+    if ( timerPaused ) startTimer();
+    else stopTimer();
+}
+void Timerer::resetTimer() {
     // hard stop
     // make sure timer is off first
     stopTimer();
@@ -118,7 +116,7 @@ void timerer::resetTimer() {
 }
 
 // render
-void timerer::drawTime() {
+void Timerer::drawTime() {
     if(!LOCKTIMEVECTOR) {return;} // this just assumes that the timer is running
     int64_t systime  = getSystimeMS();
 
@@ -130,14 +128,20 @@ void timerer::drawTime() {
 
     // check if it is out of time, if it is then iterate timers
     if(systime >= timerEnd && timerEnd != 0 && !betweenTimers) nextTimer();
-    int64_t difftime = timerEnd - systime;
-    renderTime(difftime, (char*)timerlist.at(curTimer).name.data(), renderer, window);
+    // allow for the timer to be paused by rendering the paused text
+    if ( timerPaused ) {
+        renderTime(timeleft, (char*)timerlist.at(curTimer).name.data(), renderer, window);
+    }
+    else {
+        int64_t difftime = timerEnd - systime;
+        renderTime(difftime, (char*)timerlist.at(curTimer).name.data(), renderer, window);
+    }
 }
 
-std::vector<timerentry> timerer::getTimers() {
+std::vector<timerentry> Timerer::getTimers() {
     return timerlist;
 }
-bool timerer::setTimers(std::vector<timerentry> entries) {
+bool Timerer::setTimers(std::vector<timerentry> entries) {
     if(LOCKTIMEVECTOR) return false;
     timerlist = entries;
     return true;

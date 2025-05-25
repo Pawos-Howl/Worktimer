@@ -20,7 +20,8 @@ struct centeredInfo {
 RenderInfo *getTextureFromChars(char* text, TTF_Font* font, SDL_Color color, SDL_Renderer* renderer);
 
 // other helper calls
-RenderInfo *getTextureFromChars(char* text, char* paf, int size, SDL_Color color, SDL_Renderer* renderer);
+RenderInfo *getTextureFromChars(char* text, char* fontpath, int size, SDL_Color color, SDL_Renderer* renderer);
+RenderInfo *getTextureFromChars(char* text, int size, SDL_Color color, SDL_Renderer* renderer);
 RenderInfo *getTextureFromChars(char* text, int size, SDL_Renderer* renderer);
 RenderInfo *getTextureFromChars(char* text, SDL_Renderer* renderer);
 

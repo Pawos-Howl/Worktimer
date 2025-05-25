@@ -4,73 +4,98 @@
 
 #include <string>
 
-inline void addPaddingZeros(std::string &str, int8_t &num) {
-    if ( num < 10 && str.length() != 0 ) {
-        // add padded zero
-        str.append("0");
-    }
+// buffered time
+int64_t bufftime;
+RenderInfo* bufftrender;
+centeredInfo *bufftcenter;
+
+// buffered label
+char* bufflabel;
+RenderInfo* bufflrender;
+centeredInfo *bufflcenter;
+
+// clearing cache
+inline void clearTimeRenderCache() {
+    if ( bufftrender != NULL ) DestroyRenderInfo(bufftrender);
+    if ( bufftcenter != NULL ) DestroyCenteredInfo(bufftcenter);
+}
+inline void clearLabelRenderCache() {
+    if ( bufflrender != NULL ) DestroyRenderInfo(bufflrender);
+    if ( bufflcenter != NULL ) DestroyCenteredInfo(bufflcenter);
+}
+void clearTimerRenderCache() {
+    // time and the label fall out of scope
+    clearTimeRenderCache();
+    clearLabelRenderCache();
 }
 
-void timeToChars(int64_t time, char* finstr) {
+void timeToChars(int64_t time, char* buff, int buffsize) {
     int16_t ms = time % 1000; // extract the MS
     time = time / 1000; // remove the ms
 
     int8_t sec = time % 60; // get the seconds
     time = time / 60; // remove the seconds
 
-    int8_t mins = time % 60; // get the minutes
+    int8_t min = time % 60; // get the minutes
     time = time / 60; // remove minutes
 
-    int8_t hr = time; // the last of it should be hours
+    int64_t hr = time; // the last of it should be hours
 
-    // char str[20];
-    // memset(str, 0x00, sizeof(char)*20);
-    // sprintf(str, "%d:%d:%d.%d", hr, mins, sec, ms);
-    std::string str; // will fall out of scope
-    if ( hr != 0 ) {
-        str.append(std::to_string(hr)+":");
-    }
-    if ( mins != 0 ) {
-        addPaddingZeros(str,mins);
-        str.append(std::to_string(mins)+":");
-    }
-    // use seconds always
-    addPaddingZeros(str,sec);
-    str.append(std::to_string(sec)+".");
-    if ( ms < 100 ) {
-        // add padded zero
-        str.append("0");
-        if ( ms < 10 ) {
-            // another padded zero
-            str.append("0");
+    // snprintf(buff, 32, "%02d:%02d:%02d.%03d", hr, min, sec, ms);
+    if ( hr == 0 ){
+        if ( min == 0 ) {
+            snprintf(buff, buffsize, "%d.%03d", sec, ms);
+        } else {
+            snprintf(buff, buffsize, "%d:%02d.%03d", min, sec, ms);
         }
+    } else {
+        snprintf(buff, buffsize, "%ld:%02d:%02d.%03d", hr, min, sec, ms);
     }
-    str.append(std::to_string(ms));
-    strcpy(finstr,str.c_str());
 }
 void renderTime(int64_t time, char* label, SDL_Renderer* renderer, SDL_Window* window) {
     // time
-    char* str = (char *)malloc(21); // size of string, plus one the null byte
-    timeToChars(time, str);
+    // check if time is buffered
+    if ( time == bufftime ) {
+        RenderTTFTexture(bufftrender, renderer, bufftcenter);
+    }
+    else {
+        // destroy buffered textures
+        clearTimeRenderCache();
 
-    RenderInfo* trender = getTextureFromChars(str, 50, renderer);
-    centeredInfo *tcenter = centerTexture(trender, window);
-    // shift down
-    tcenter->y += 15;
+        char* str = (char *)malloc(32); // size of string, plus one the null byte
+        timeToChars(time, str, 32);
 
-    RenderTTFTexture(trender, renderer, tcenter);
-    DestroyRenderInfo(trender);
-    DestroyCenteredInfo(tcenter);
+        RenderInfo* trender = getTextureFromChars(str, 50, renderer);
+        centeredInfo *tcenter = centerTexture(trender, window);
+        free(str); // clean up the malloc
+        // shift down
+        tcenter->y += 15;
 
-    free(str); // clean up the malloc
+        RenderTTFTexture(trender, renderer, tcenter);
+
+        // map the ptrs to the buffer
+        bufftrender = trender;
+        bufftcenter = tcenter;
+    }
 
     // label
-    RenderInfo* lrender = getTextureFromChars(label, 30, renderer);
-    centeredInfo *lcenter = centerTexture(lrender, window);
-    // shift it up
-    lcenter->y -= 25;
+    // check if label is buffered
+    if ( label == bufflabel ) { // comparing the ptr addresses
+        RenderTTFTexture(bufflrender, renderer, bufflcenter);
+    }
+    else {
+        // destroy buffered textures
+        clearLabelRenderCache();
 
-    RenderTTFTexture(lrender, renderer, lcenter);
-    DestroyRenderInfo(lrender);
-    DestroyCenteredInfo(lcenter);
+        RenderInfo* lrender = getTextureFromChars(label, 30, renderer);
+        centeredInfo *lcenter = centerTexture(lrender, window);
+        // shift it up
+        lcenter->y -= 25;
+
+        RenderTTFTexture(lrender, renderer, lcenter);
+
+        // map the ptrs to the buffer
+        bufflrender = lrender;
+        bufflcenter = lcenter;
+    }
 }
